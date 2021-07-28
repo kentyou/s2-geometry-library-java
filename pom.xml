@@ -26,7 +26,7 @@
 
   <groupId>com.kentyou.google.common.geometry</groupId>
   <artifactId>s2-geometry-library-java</artifactId>
-  <version>0.0.1.kentyou</version>
+  <version>0.0.2-SNAPSHOT</version>
   <name>S2 Geometry Library for Java</name>
   <description>
     Core geometry libraries for Java.
