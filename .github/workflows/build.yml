@@ -1,0 +1,35 @@
+name: CI Build
+
+on:
+  push:
+    branches: '**'
+    tags: '**'
+  pull_request:
+    branches: '**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - name: Maven repository cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Build
+        if: ${{ startsWith( github.ref, 'refs/heads/' ) && github.ref != 'refs/heads/build' }}
+        run: mvn --batch-mode --update-snapshots verify
+      - name: Build and publish
+        if: ${{ github.ref == 'refs/heads/build' || startsWith( github.ref, 'refs/tags/' ) }}
+        run: mvn --batch-mode --update-snapshots -DaltDeploymentRepository=github::https://maven.pkg.github.com/kentyou/s2-geometry-library-java clean verify org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
