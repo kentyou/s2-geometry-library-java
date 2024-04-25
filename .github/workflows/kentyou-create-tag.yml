@@ -1,0 +1,45 @@
+name: Create a Kentyou release tag
+
+# This GitHub Actions workflow facilitates the creation and
+# deployment of a release tag based on user-specified inputs.
+#
+# It can be manually triggered via the workflow_dispatch event,
+# allowing users to specify both the Git reference (e.g., a commit
+# SHA or branch name) and the name of the tag to be created. The
+# workflow checks out the specified reference, sets up Java JDK 17,
+# and then utilizes a custom Maven action to create and publish
+# the tag to the repository.
+
+on:
+  workflow_dispatch:
+    inputs:
+      git-ref:
+        description: 'Git Reference to tag - usually a branch (will use HEAD) or commit'
+        required: true
+        default: 'main'
+        type: string
+      tag-name:
+        description: 'The name of the tag to create'
+        required: true
+        type: string
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # v4.1.3
+      with:
+        ref: ${{ inputs.git-ref }}
+    - name: Set up JDK 17
+      uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Create and Publish tag
+      uses: kentyou/build-automation/actions/maven-tag@618c22447eb725db457b9bf0d47398e52f5c5c7a # v1.0.0
+      with:
+        tag-name: ${{ inputs.tag-name }}
+        repo-secret: ${{ secrets.KENTYOU_CI_PAT }}
